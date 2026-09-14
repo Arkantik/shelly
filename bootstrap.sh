@@ -50,7 +50,12 @@ while IFS= read -r -d '' f; do
   case "$rel" in bootstrap.sh|sync.sh|shell.manifest|README.md|.shell-projects|.git/*) continue;; esac
   dest="$TARGET/$rel"
   if [ -e "$dest" ]; then
-    echo "skip   $rel (exists)"
+    if [ "$rel" = "CLAUDE.md" ] && [ ! -e "$dest.shell" ]; then
+      cp "$f" "$dest.shell"
+      echo "keep   CLAUDE.md (yours), shell version at CLAUDE.md.shell for merging"
+    else
+      echo "skip   $rel (exists)"
+    fi
     skipped=$((skipped+1))
   else
     mkdir -p "$(dirname "$dest")"
@@ -72,10 +77,11 @@ if [ "$DEPLOY_TARGET" != "__all__" ] && [ -d "$TDIR" ]; then
     esac
   done
   [ "$DEPLOY_TARGET" = "custom" ] && cp "$TDIR/_template.md" "$TDIR/custom.md" 2>/dev/null || true
-  if [ -f "$TARGET/CLAUDE.md" ]; then
-    sed -i.bak "s|^- Deploy target: .*|- Deploy target: $DEPLOY_TARGET|" "$TARGET/CLAUDE.md" 2>/dev/null || true
-    rm -f "$TARGET/CLAUDE.md.bak"
-  fi
+  for cm in "$TARGET/CLAUDE.md" "$TARGET/CLAUDE.md.shell"; do
+    [ -f "$cm" ] || continue
+    sed -i.bak "s|^- Deploy target: .*|- Deploy target: $DEPLOY_TARGET|" "$cm" 2>/dev/null || true
+    rm -f "$cm.bak"
+  done
 fi
 
 chmod +x "$TARGET/.claude/hooks/"*.sh "$TARGET/scripts/"*.sh 2>/dev/null || true
@@ -86,7 +92,9 @@ Copied $copied files, skipped $skipped. Deploy target: $DEPLOY_TARGET
 
 Next, in order:
 
-  1. Fill the placeholders in $TARGET/CLAUDE.md. The commands table first: every command
+  1. Run /start-project in a Claude Code session. It fills the placeholders, and on an
+     existing project it reads them out of the codebase instead of asking.
+     Or by hand: fill the placeholders in $TARGET/CLAUDE.md. The commands table first: every command
      must run as written. Nothing else in the shell works if that table is wrong.
   2. Read .claude/skills/ship/targets/$DEPLOY_TARGET.md and correct anything that does not
      match how this project actually deploys. The traps section is worth filling in as you hit them.
