@@ -60,7 +60,7 @@ Workflow: `/new-feature` `/fix-bug` `/refactor` `/perf` `/review` `/commit` `/re
 
 Tickets: `/to-tickets` `/triage` `/pick-next`
 
-Frontend: `/design-system` `/new-component`
+Frontend: `/design-system` `/new-component` `/loading-states` `/ui-details`
 
 Contracts and data: `/api-contract` `/db-migration`
 
