@@ -69,3 +69,4 @@ props. An unregistered component gets rebuilt by the next session.
 - Never ship a component that renders remote data without loading, empty, and error states.
 - Never use a non-semantic element for an interactive control.
 - Never hardcode a design value.
+- Icons come from **Hugeicons** only. Do not use Lucide or any other icon library.
